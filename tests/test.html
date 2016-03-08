@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<script>
+		var requireConfig = {
+			config: {
+				baseURL: '.'
+			}
+		};
+	</script>
+	<script src="../loader.js"></script>
+	<script>
+		require(['A'], function(A){
+			console.log('A is ', A);
+		});
+	</script>
+	<title>Test</title>
+</head>
+<body>
+
+</body>
+</html>
