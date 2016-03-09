@@ -95,8 +95,9 @@ Bla bla bla copyright
 
 	var currentScript;
 	var modules = {};
+	var currentScriptSupported = (typeof document.currentScript == 'object');
 
-	function define(mid, dependencies, callback)
+	function define(mid, dependencies, callback, errback)
 	{
 		if (typeof mid != 'string')		// module id isn't specified, let current script to be the module
 		{
