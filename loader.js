@@ -13,7 +13,7 @@ Bla bla bla copyright
 	this.require = require;
 	this.define = define;
 
-	var loadedScripts = {};
+	var scriptsByUrl = {};
 
 	function require(config, dependencies, callback, errback)
 	{
@@ -40,7 +40,7 @@ Bla bla bla copyright
 			var xx = processMid(dependencies[i], globalConfig.packages);
 			var moduleBase = xx.packageName ? globalConfig.packages[xx.packageName] : currentURL;
 			var depURL = resolvePath(moduleBase, xx.path) + '.js';
-			var module = loadedScripts[depURL];
+			var module = scriptsByUrl[depURL];
 			if (module)
 			{
 				if (module.failed)
@@ -55,6 +55,7 @@ Bla bla bla copyright
 			else
 			{
 				module = new ScriptFile(depURL, xx.packageName, xx.path);
+				scriptsByUrl[depURL] = module;
 				unresolvedDeps.push(module);
 			}
 			dependentModules.push(module);
@@ -74,7 +75,14 @@ Bla bla bla copyright
 			});
 			if (!module.loading)
 			{
-				module.loadXHR();
+				if (currentScriptSupported)
+				{
+					module.load();
+				}
+				else
+				{
+					module.loadXHR();
+				}
 			}
 		}
 		if (unresolvedDeps.length == 0)
@@ -104,13 +112,22 @@ Bla bla bla copyright
 			callback = dependencies;
 			dependencies = mid;
 			// find the module id
-			mid = currentScript.pack + '/' + currentScript.path;
-			var anonModule = currentScript;
-			if (currentScript.hasDefine)
+			if (currentScriptSupported)
+			{
+				var scriptURL = document.currentScript.src;
+				var anonModule = scriptsByUrl[scriptURL];
+				mid = anonModule.pack + '/' + anonModule.path;
+			}
+			else
+			{
+				mid = currentScript.pack + '/' + currentScript.path;
+				anonModule = currentScript;
+			}
+			if (anonModule.hasDefine)
 			{
 				throw new Error('simple require: several anonymus define() specified in a file');
 			}
-			currentScript.hasDefine = true;
+			anonModule.hasDefine = true;
 		}
 		require({}, dependencies, function(){
 			if (modules[mid])
@@ -147,7 +164,6 @@ Bla bla bla copyright
 		this.loaded = false;
 		this.loading = false;
 		this.hasDefine = false;
-		this.onDefineComplete = null;
 		this.listeners = [];
 		this.content = null;
 		this.failed = null;
@@ -165,18 +181,14 @@ Bla bla bla copyright
 				return;
 			}
 			self.loading = false;
-			loadedScripts[self.url] = self;
 			var success = (request.status >= 200 && request.status < 300) || request.status == 304;
 			if (success)
 			{
 				currentScript = self;
-				self.onDefineComplete = function(){
-					self.callListeners(null);
-				};
 				var script = document.createElement('script');
 				script.text = request.responseText;
 				document.head.appendChild(script);
-				// assume define() has just executed - it filled our content
+				// don't call listeners if we had a define() in anonymous module - wait for dependencies
 				if (!self.hasDefine)
 				{
 					self.callListeners(null);
@@ -208,14 +220,15 @@ Bla bla bla copyright
 		{
 			node.removeEventListener('load', onLoad);
 			node.removeEventListener('error', onError);
-			loadedScripts[self.url] = self;
-			self.callListeners(null);
+			if (!self.hasDefine)
+			{
+				self.callListeners(null);
+			}
 		}
 		function onError(event)
 		{
 			node.removeEventListener('load', onLoad);
 			node.removeEventListener('error', onError);
-			loadedScripts[self.url] = self;
 			self.failed = event;
 			self.callListeners(event);
 		}
@@ -233,6 +246,10 @@ Bla bla bla copyright
 			var listener = this.listeners.shift();
 			listener.call(this, this, error);
 		}
+	};
+	ScriptFile.prototype.onDefineComplete = function()
+	{
+		this.callListeners(null);
 	};
 // ******************* Helper functions **********************************************
 	function getAttrConfig()
