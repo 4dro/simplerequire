@@ -9,23 +9,28 @@ No synchronous mode and no CommonJS-style requirements.
 The library consists on one file: loader.js
 The loader provides 2 global functions
 
-```
-require([Object config,] Array dependencies, Function callback [, Function errback])
-Parameters
-config
- Optional.
-dependencies
- Required. An array of dependent module IDs to load.
-callback
-errback
 
-Returns
- Nothing.
-Description
-Examples
+_void_ **require**([_Object_ config,] _Array_ dependencies, _Function_ callback [, _Function_ errback])
+Parameters.
+**config**
+ Optional.
+**dependencies**
+ Required. An array of dependent module IDs to load.
+**callback**
+  Required. Function to be called when all dependencies are loaded.
+**errback**
+
+Description.
+Loads javascript modules specified in the _dependencies_ parameter. When all the modules
+are loaded and processed, the callback function is called, with loaded modules as arguments.
+Examples.
+```
+	require(['scripts/jquery', 'widgets/CustomButton'], function(jquery, CustomButton){
+		CustomButton.apply(jquery('#submitButton'));
+	});
 ```
 ```
-define([String moduleID,] Array dependencies, Function factory)
+void define([String moduleID,] Array dependencies, Function factory)
 Parameters
 moduleID
  Optional.
@@ -51,8 +56,10 @@ define(['package1/ui/SuperWidget', 'package2/utils/base64', 'package2/xhr/Reques
 
 ### Configuration
 Configuration object may be defined before calling to require() function. It may have two options:
-basePath: a URL used to resolve module ids that have no package. Defaults to window.location.href directory.
-packages: an object containing a map of {packageName: URL to that package}
+**baseUrl:** a URL used to resolve module ids that have no package. If the URL is relative, it is relative to _window.location.href_ directory.
+Defaults to '.'.
+**packages:** an object containing a map of {packageName: _URL to that package_}. Package name cannot start with a dot (.).
+Package URLs could  be absolute or relative to baseUrl.
 
 ### Module identifiers
 Module identifier is a string containing a path to a module. They are passed to require() and define() functions in
@@ -61,9 +68,17 @@ Identifier consists of a package name and a path within that package separated w
 Every package has and associated URL path to find modules in. It is specified in require config (packages parameter).
 Default package ('', empty name) is always associated with basePath paramter (which defaults to html page location directory).
 
+### Plugins
+A plugin is a modules that has a "!" sign in it's module ID. The srting to the left of the "!"
+sign in the mid of the module, and the part after the "!" is a parameter to the plugin.
+
+The loader insert modules as scripts to the document head. If the broser supports document.currentScript property,
+then asynchronous scripts are loaded. Otherwise the scripts are loaded via xhr requests.
+
 ### Original requirejs setting that are not supported.
 * No magic module names ("require", "export" and "module"). So you are not able make a module context sensitive
 require inside your module.
+* Config.
 * No several search paths for a module. Only package path is used if a module starts with a package name, and the basePath
 otherwise.
 * No bundles and map. Every module should either a) have the same file name as it's module identifier or b) be loaded and defined in a

@@ -376,10 +376,34 @@ Bla bla bla copyright
 		}
 	}
 
-	// basePath: dfsdfsdfs, packages: {'aaa://fgfg'}
+	// parses data-require-config attribute, like that: baseUrl: dfsdfsdfs, packages: {aaa: 'aaa://fgfg', bb: 'b/c'}
 	function parseJSProps(string)
 	{
+		// FIXME: use better parser, url that contains '}' or ',' won't be parsed correctly
 		var props = {};
+		var packRE = /(?:^|,)\s*packages\s*:\s*\{\s*(.*?)\s*\}/;
+		var packages = string.match(packRE)[1];
+		if (packages)
+		{
+			props.packages = {};
+			var parts = packages.split(',');
+			for (var i = 0; i < parts.length; i++)
+			{
+				var arr = parts[i].match(/\s*(\w+)\s*:\s*'(.*)'/);
+				var name = arr[1];
+				var url = arr[2];
+				if (name && url)
+				{
+					props.packages[name] = url;
+				}
+			}
+		}
+		string = string.replace(packRE, '');
+		var base = string.match(/(?:^|,)\s*baseUrl\s*:\s*'(.*?)'/)[1];
+		if (base)
+		{
+			props.baseUrl = base;
+		}
 		return props;
 	}
 })();

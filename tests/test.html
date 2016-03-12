@@ -9,8 +9,9 @@
 			}
 		};
 	</script>
-	<script src="../loader.js"></script>
+	<script src="../code/loader.js" data-require-config="baseUrl: '.', packages: {a: 'http://xx'}"></script>
 	<script>
+
 		require(['A'], function(A){
 			console.log('A is ', A);
 		});
