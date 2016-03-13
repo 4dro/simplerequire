@@ -60,6 +60,9 @@ Configuration object may be defined before calling to require() function. It may
 Defaults to '.'.
 **packages:** an object containing a map of {packageName: _URL to that package_}. Package name cannot start with a dot (.).
 Package URLs could  be absolute or relative to baseUrl.
+Configuration may be specified in two ways:
+A data-require-config attribute of the <script> that loads the loader.js file.
+A requireConfig object in the global scope defined before loading the loader.
 
 ### Module identifiers
 Module identifier is a string containing a path to a module. They are passed to require() and define() functions in
