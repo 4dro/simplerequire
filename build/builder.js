@@ -21,19 +21,23 @@ if (!cfgName)
 var config = require(cfgName);
 console.log(config);
 
-var filename = '../tests/A.js';
-var code = fs.readFileSync(filename, 'utf8');
-var toplevel = UglifyJS.parse(code, {filename: filename});
+var files = ['../tests/A.js'];
+for (i = 0; i < files.length; i++)
+{
+	var filename = files[i];
+	var code = fs.readFileSync(filename, 'utf8');
+	var toplevel = UglifyJS.parse(code, {filename: filename});
 
-toplevel.figure_out_scope();
-var compressed_ast = toplevel.transform(UglifyJS.Compressor({}));
+	toplevel.figure_out_scope();
+	var compressed_ast = toplevel.transform(UglifyJS.Compressor({}));
 
-compressed_ast.figure_out_scope();
-compressed_ast.compute_char_frequency();
-compressed_ast.mangle_names();
+	compressed_ast.figure_out_scope();
+	compressed_ast.compute_char_frequency();
+	compressed_ast.mangle_names();
 
-var stream = UglifyJS.OutputStream({});
-compressed_ast.print(stream);
-var minified = stream.toString(); // this is your minified code
+	var stream = UglifyJS.OutputStream({});
+	compressed_ast.print(stream);
+	var minified = stream.toString(); // this is your minified code
 
-console.log(minified);
+	console.log(minified);
+}

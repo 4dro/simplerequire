@@ -1,7 +1,7 @@
 {
-  "basePath" : "",
-  "outputFile" : "",
-  "includeLoader" : true,
+  "basePath" : "../code",
+  "outputFile" : "loader.js",
+  "includeLoader" : "loader.js",
   "packages" : [],
   "includes" : [],
   "excludes" : []
