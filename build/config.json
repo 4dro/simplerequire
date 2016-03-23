@@ -1,8 +1,8 @@
 {
-  "basePath" : "../code",
-  "outputFile" : "loader.js",
-  "includeLoader" : "loader.js",
-  "packages" : [],
-  "includes" : [],
-  "excludes" : []
+  "basePath" : "../tests",
+  "outputFile" : "build.min.js",
+  "includeLoader" : "code/loader.js",
+  "packages" : {},
+  "includes" : ["*.js", "text:arymp/admin/**/*.html"],
+  "excludes" : ["B.js"]
 }
