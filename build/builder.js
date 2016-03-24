@@ -93,16 +93,26 @@ for (i = 0; i < includes.length; i++)
 
 var fd = fs.openSync(outputFile, 'w');
 
-var PRE_CODE = '(function(define){\n';
-var POST_CODE = '\n})(function(){});\n';
-
 for (i = 0; i < foundModules.length; i++)
 {
-	var code = PRE_CODE + processFile(foundModules[i]) + POST_CODE;
+	var code = processFile(foundModules[i]);
 	fs.writeSync(fd, code);
 }
 
 fs.closeSync(fd);
+
+function wrapCode(code, mid)
+{
+	var result = '(function(define){\n';
+	result += code;
+	result += '\n})(function(id){' +
+		'if (typeof id == "string"){' +
+		'define.apply(this, arguments);' +
+		'}else {' +
+		'define.apply(this, Array.prototype.slice.call(arguments).unshift("' + mid + '"));' +
+	'}});\n';
+	return result;
+}
 
 // ******************** Minification function ***********************************
 function processFile(module)
@@ -122,7 +132,7 @@ function processFile(module)
 	var stream = UglifyJS.OutputStream({});
 	compressed_ast.print(stream);
 	var minified = stream.toString(); // this is your minified code
-
 	//console.log(minified);
-	return minified;
+
+	return wrapCode(minified, module.mid);
 }
