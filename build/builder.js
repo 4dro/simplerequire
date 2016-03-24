@@ -49,6 +49,9 @@ for (var pack in packages)
 	packages[pack] = path.resolve(base, packages[pack]);
 }
 
+var outputFile = path.resolve(base, config.outputFile || 'build.min.js');
+console.log('Output file is ' + outputFile);
+
 // *************** Process includes ***********************************
 var foundModules = [];
 var includes = config.includes || [];
@@ -68,22 +71,26 @@ for (i = 0; i < includes.length; i++)
 	}
 	// currently, includes are directories. Process every js file in them
 	var dirname = path.resolve(dir.base, mask);
+	mask = path.normalize(mask);    // remove /./
 	var files = fs.readdirSync(dirname);
 	console.log("Found files: " + files);
 	for (var j = 0; j < files.length; j++)
 	{
 		var fname = files[j];
-		var stat = fs.statSync(dirname + '/' + fname);
+		var absolute = dirname + '/' + fname;
+		if (absolute == outputFile)
+		{
+			continue;
+		}
+		var stat = fs.statSync(absolute);
 		if (stat.isFile() && fname.substr(-3).toLowerCase() == '.js')
 		{
-			var module = {base: dirname, pid: dir.pid, mid: fname};
+			var module = {base: dir.base, pid: dir.pid, mid: mask + '/' + fname};
 			foundModules.push(module);
 		}
 	}
 }
 
-var outputFile = path.resolve(base, config.outputFile || 'build.min.js');
-console.log('Output file is ' + outputFile);
 var fd = fs.openSync(outputFile, 'w');
 
 var PRE_CODE = '(function(define){\n';
