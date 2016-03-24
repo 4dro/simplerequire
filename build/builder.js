@@ -93,11 +93,14 @@ for (i = 0; i < includes.length; i++)
 
 var fd = fs.openSync(outputFile, 'w');
 
+// TODO: rename the delay function or get rid of it
+fs.writeSync(fd, 'require.delay(true);\n');
 for (i = 0; i < foundModules.length; i++)
 {
 	var code = processFile(foundModules[i]);
 	fs.writeSync(fd, code);
 }
+fs.writeSync(fd, 'require.delay(false);');
 
 fs.closeSync(fd);
 
@@ -105,13 +108,10 @@ function wrapCode(code, mid)
 {
 	var result = '(function(define){\n';
 	result += code;
-	result += '\n})(function(id){\n' +
+	result += '\n})(function(id){' +
 		'var args = Array.prototype.slice.call(arguments);' +
-		'if (typeof id != "string"){\n' +
-		'args.unshift("' + mid + '");\n' +
-		'}\n' +
-		'define.apply(this, args);\n' +
-	'});\n';
+		'if (typeof id != "string"){args.unshift("' + mid + '");}' +
+		'define.apply(this, args);});\n';
 	return result;
 }
 

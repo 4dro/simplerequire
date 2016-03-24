@@ -14,6 +14,7 @@ Bla bla bla copyright
 	this.define = define;
 
 	var scriptsByUrl = {};
+	var delayed = false;
 
 	function require(config, dependencies, callback, errback)
 	{
@@ -73,16 +74,9 @@ Bla bla bla copyright
 					depsLoaded();
 				}
 			});
-			if (!module.loading)
+			if (!delayed && !module.loading)
 			{
-				if (currentScriptSupported)
-				{
-					module.load();
-				}
-				else
-				{
-					module.loadXHR();
-				}
+				module.load();
 			}
 		}
 		if (unresolvedDeps.length == 0)
@@ -100,6 +94,24 @@ Bla bla bla copyright
 			callback.apply(this, contents);
 		}
 	}
+
+	require.delay  = function(value)
+	{
+		delayed = value;
+		if (!value)
+		{
+			// process delaying define()s
+			for (var url in scriptsByUrl)
+			{
+				var module = scriptsByUrl[url];
+				if (!module.loading)
+				{
+					module.load()
+				}
+			}
+		}
+	};
+
 
 	var currentScript;
 	var modules = {};
@@ -187,53 +199,53 @@ Bla bla bla copyright
 		this.failed = null;
 	}
 
-	ScriptFile.prototype.loadXHR = function()
-	{
-		this.loading = true;
-		var request = new XMLHttpRequest();
-		var self = this;
-		request.onreadystatechange = function(event)
-		{
-			if (request.readyState != 4)	// complete
-			{
-				return;
-			}
-			self.loading = false;
-			var success = (request.status >= 200 && request.status < 300) || request.status == 304;
-			if (success)
-			{
-				currentScript = self;
-				var script = document.createElement('script');
-				script.text = request.responseText;
-				document.head.appendChild(script);
-				// don't call listeners if we had a define() in anonymous module - wait for dependencies
-				if (!self.hasDefine)
-				{
-					self.callListeners(null);
-				}
-			}
-			else
-			{
-				self.failed = request.statusText;
-				self.callListeners(request.statusText);
-			}
-		};
-		request.open('GET', this.url, true);
-		request.send();
-	};
-
 	ScriptFile.prototype.load = function()
 	{
 		this.loading = true;
 		var self = this;
-		var node = document.createElement('script');
-		node.async = true;
-		node.type = 'text/javascript';
-		node.charset = 'utf-8';
-		node.addEventListener('load', onLoad);
-		node.addEventListener('error', onError);
-		node.src = this.url;
-		document.head.appendChild(node);
+		if (currentScriptSupported)
+		{
+			var node = document.createElement('script');
+			node.async = true;
+			node.type = 'text/javascript';
+			node.charset = 'utf-8';
+			node.addEventListener('load', onLoad);
+			node.addEventListener('error', onError);
+			node.src = this.url;
+			document.head.appendChild(node);
+		}
+		else
+		{
+			var request = new XMLHttpRequest();
+			request.onreadystatechange = function(event)
+			{
+				if (request.readyState != 4)	// complete
+				{
+					return;
+				}
+				self.loading = false;
+				var success = (request.status >= 200 && request.status < 300) || request.status == 304;
+				if (success)
+				{
+					currentScript = self;
+					var script = document.createElement('script');
+					script.text = request.responseText;
+					document.head.appendChild(script);
+					// don't call listeners if we had a define() in anonymous module - wait for dependencies
+					if (!self.hasDefine)
+					{
+						self.callListeners(null);
+					}
+				}
+				else
+				{
+					self.failed = request.statusText;
+					self.callListeners(request.statusText);
+				}
+			};
+			request.open('GET', this.url, true);
+			request.send();
+		}
 
 		function onLoad()
 		{
