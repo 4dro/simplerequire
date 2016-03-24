@@ -1,6 +1,5 @@
 console.log('B executing');
-define(
-	[],
+define([],
 function(){
 return {
 	b: 'B'
