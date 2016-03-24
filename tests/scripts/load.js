@@ -1,6 +1,6 @@
 console.log("I'm executing");
-define();
-defer();
+define([], function(){});
+//defer();
 
 function defer()
 {

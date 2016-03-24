@@ -71,7 +71,7 @@ for (i = 0; i < includes.length; i++)
 	}
 	// currently, includes are directories. Process every js file in them
 	var dirname = path.resolve(dir.base, mask);
-	mask = path.normalize(mask);    // remove /./
+	mask = mask.replace(/(?:^|\/)\./g, '');    // remove /./
 	var files = fs.readdirSync(dirname);
 	console.log("Found files: " + files);
 	for (var j = 0; j < files.length; j++)
@@ -105,12 +105,13 @@ function wrapCode(code, mid)
 {
 	var result = '(function(define){\n';
 	result += code;
-	result += '\n})(function(id){' +
-		'if (typeof id == "string"){' +
-		'define.apply(this, arguments);' +
-		'}else {' +
-		'define.apply(this, Array.prototype.slice.call(arguments).unshift("' + mid + '"));' +
-	'}});\n';
+	result += '\n})(function(id){\n' +
+		'var args = Array.prototype.slice.call(arguments);' +
+		'if (typeof id != "string"){\n' +
+		'args.unshift("' + mid + '");\n' +
+		'}\n' +
+		'define.apply(this, args);\n' +
+	'});\n';
 	return result;
 }
 
@@ -118,7 +119,7 @@ function wrapCode(code, mid)
 function processFile(module)
 {
 	var filename = module.base + '/' + module.mid;
-	console.log('Processing ' + filename + '...');
+	console.log('Processing ' + filename + ' ...');
 	var code = fs.readFileSync(filename, 'utf8');
 	var toplevel = UglifyJS.parse(code, {filename: filename});
 

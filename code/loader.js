@@ -111,6 +111,14 @@ Bla bla bla copyright
 		{
 			callback = dependencies;
 			dependencies = mid;
+			mid = undefined;
+		}
+		if (!Array.isArray(dependencies) || typeof callback != 'function')
+		{
+			throw new Error('simplerequire: define() invalid arguments.');
+		}
+		if (!mid)
+		{
 			// find the module id
 			if (currentScriptSupported)
 			{
