@@ -116,11 +116,19 @@ Bla bla bla copyright
 			{
 				var scriptURL = document.currentScript.src;
 				var anonModule = scriptsByUrl[scriptURL];
-				mid = anonModule.pack + '/' + anonModule.path;
+				mid = anonModule.path;
+				if (anonModule.pack)
+				{
+					mid = anonModule.pack + '/' + anonModule.path;
+				}
 			}
 			else
 			{
-				mid = currentScript.pack + '/' + currentScript.path;
+				mid = currentScript.path;
+				if (currentScript.pack)
+				{
+					mid = currentScript.pack + '/' + currentScript.path;
+				}
 				anonModule = currentScript;
 			}
 			if (anonModule.hasDefine)
@@ -129,7 +137,9 @@ Bla bla bla copyright
 			}
 			anonModule.hasDefine = true;
 		}
-		require({}, dependencies, function(){
+		var dirs = mid.split('/');
+		dirs.pop();
+		require({currentURL: dirs.join('/')}, dependencies, function(){
 			if (modules[mid])
 			{
 				throw new Error('Module' + mid + ' already defined');
@@ -206,6 +216,7 @@ Bla bla bla copyright
 
 	ScriptFile.prototype.load = function()
 	{
+		this.loading = true;
 		var self = this;
 		var node = document.createElement('script');
 		node.async = true;
