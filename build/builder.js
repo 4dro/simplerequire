@@ -85,7 +85,12 @@ for (i = 0; i < includes.length; i++)
 		var stat = fs.statSync(absolute);
 		if (stat.isFile() && fname.substr(-3).toLowerCase() == '.js')
 		{
+			fname = fname.substring(0, fname.length - 3);     // remove .js extension
 			var module = {base: dir.base, pid: dir.pid, mid: mask + '/' + fname};
+			if (!mask)
+			{
+				module.mid = fname;
+			}
 			foundModules.push(module);
 		}
 	}
@@ -110,7 +115,7 @@ function wrapCode(code, mid)
 	result += code;
 	result += '\n})(function(id){' +
 		'var args = Array.prototype.slice.call(arguments);' +
-		'if (typeof id != "string"){args.unshift("' + mid + '");}' +
+		'if(typeof id != "string"){args.unshift("' + mid + '");}' +
 		'define.apply(this, args);});\n';
 	return result;
 }
@@ -118,7 +123,7 @@ function wrapCode(code, mid)
 // ******************** Minification function ***********************************
 function processFile(module)
 {
-	var filename = module.base + '/' + module.mid;
+	var filename = module.base + '/' + module.mid + '.js';
 	console.log('Processing ' + filename + ' ...');
 	var code = fs.readFileSync(filename, 'utf8');
 	var toplevel = UglifyJS.parse(code, {filename: filename});

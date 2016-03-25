@@ -74,6 +74,7 @@ Bla bla bla copyright
 					depsLoaded();
 				}
 			});
+			module = unresolvedDeps[i];
 			if (!delayed && !module.loading)
 			{
 				module.load();
@@ -162,7 +163,7 @@ Bla bla bla copyright
 		require({currentURL: dirs.join('/')}, dependencies, function(){
 			if (modules[mid])
 			{
-				throw new Error('Module' + mid + ' already defined');
+				throw new Error('simplerequire: module "' + mid + '" already defined');
 			}
 			var content = callback.apply(this, arguments);
 			modules[mid] = content;
