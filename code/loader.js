@@ -41,7 +41,7 @@ Bla bla bla copyright
 			var xx = processMid(dependencies[i], globalConfig.packages);
 			var moduleBase = xx.packageName ? globalConfig.packages[xx.packageName] : currentURL;
 			var depURL = resolvePath(moduleBase, xx.path) + '.js';
-			var module = scriptsByUrl[depURL];
+			var module = scriptsByUrl[depURL] || modules[xx.path];
 			if (module)
 			{
 				if (module.failed)
@@ -57,6 +57,7 @@ Bla bla bla copyright
 			{
 				module = new ScriptFile(depURL, xx.packageName, xx.path);
 				scriptsByUrl[depURL] = module;
+				modules[xx.path] = module;
 				unresolvedDeps.push(module);
 			}
 			dependentModules.push(module);
@@ -105,7 +106,7 @@ Bla bla bla copyright
 			for (var url in scriptsByUrl)
 			{
 				var module = scriptsByUrl[url];
-				if (!module.loading)
+				if (!module.loaded && !module.loading)
 				{
 					module.load()
 				}
@@ -158,10 +159,15 @@ Bla bla bla copyright
 			}
 			anonModule.hasDefine = true;
 		}
+		else
+		{
+			anonModule = modules[mid] || new ScriptFile('', mid, mid);
+			anonModule.loaded = true;
+		}
 		var dirs = mid.split('/');
 		dirs.pop();
 		require({currentURL: dirs.join('/')}, dependencies, function(){
-			if (modules[mid])
+			if (modules[mid] && modules[mid.content])
 			{
 				throw new Error('simplerequire: module "' + mid + '" already defined');
 			}

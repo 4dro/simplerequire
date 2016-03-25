@@ -3,6 +3,6 @@
   "outputFile" : "../build/build.min.js",
   "includeLoader" : "code/loader.js",
   "packages" : {},
-  "includes" : ["", "scripts", "plugin:dojo/i18n!*.js"],
+  "includes" : ["", "scripts"],
   "excludes" : ["B.js"]
 }
